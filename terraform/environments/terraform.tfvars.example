@@ -1,0 +1,157 @@
+# ==============================================================================
+# Configuração de Ambiente - terraform.tfvars
+# ==============================================================================
+# Copie este arquivo para terraform.tfvars e ajuste os valores
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Configurações Gerais
+# ------------------------------------------------------------------------------
+project_name = "devops-challenge"
+environment  = "staging"
+aws_region   = "us-east-1"
+
+# ------------------------------------------------------------------------------
+# Tags padrão para todos os recursos
+# ------------------------------------------------------------------------------
+default_tags = {
+  Project     = "devops-challenge"
+  Environment = "staging"
+  ManagedBy   = "terraform"
+  Owner       = "devops-team"
+  CostCenter  = "engineering"
+}
+
+# ------------------------------------------------------------------------------
+# Networking
+# ------------------------------------------------------------------------------
+vpc_cidr = "10.0.0.0/16"
+
+public_subnets = [
+  "10.0.1.0/24",
+  "10.0.2.0/24"
+]
+
+private_subnets = [
+  "10.0.10.0/24",
+  "10.0.11.0/24"
+]
+
+availability_zones = [
+  "us-east-1a",
+  "us-east-1b"
+]
+
+# Enable NAT Gateway (set to false for cost savings in non-prod)
+enable_nat_gateway = true
+single_nat_gateway = true  # Use single NAT for cost savings
+
+# ------------------------------------------------------------------------------
+# Security Groups
+# ------------------------------------------------------------------------------
+# Allowed CIDR blocks for ALB ingress
+alb_ingress_cidr_blocks = ["0.0.0.0/0"]
+
+# Allowed CIDR blocks for SSH access (bastion)
+ssh_allowed_cidr_blocks = ["0.0.0.0/0"]
+
+# ------------------------------------------------------------------------------
+# Compute Configuration
+# ------------------------------------------------------------------------------
+# Uncomment the section for your chosen compute platform
+
+# EKS Configuration
+# eks_cluster_version    = "1.28"
+# eks_node_instance_types = ["t3.medium"]
+# eks_node_desired_size  = 2
+# eks_node_min_size      = 1
+# eks_node_max_size      = 4
+# eks_node_disk_size     = 20
+
+# ECS Configuration
+# ecs_task_cpu           = 256
+# ecs_task_memory        = 512
+# ecs_service_desired_count = 2
+# ecs_enable_execute_command = true
+
+# EC2 Configuration
+# ec2_instance_type = "t3.medium"
+# ec2_key_pair_name = "devops-challenge-key"
+
+# ------------------------------------------------------------------------------
+# Container Registry (ECR)
+# ------------------------------------------------------------------------------
+ecr_repositories = ["api", "frontend"]
+ecr_image_retention_count = 10
+ecr_scan_on_push = true
+
+# ------------------------------------------------------------------------------
+# Load Balancer (ALB)
+# ------------------------------------------------------------------------------
+alb_internal = false
+alb_deletion_protection = false
+alb_idle_timeout = 60
+
+# Health check settings
+api_container_port        = 8000
+api_health_check_path     = "/health"
+api_health_check_interval = 30
+
+frontend_container_port        = 80
+frontend_health_check_path     = "/health"
+frontend_health_check_interval = 30
+
+# SSL/TLS Configuration
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxx"
+# enable_https = true
+
+# ------------------------------------------------------------------------------
+# Database Configuration (Optional)
+# ------------------------------------------------------------------------------
+# enable_database = false
+# db_instance_class = "db.t3.micro"
+# db_allocated_storage = 20
+# db_max_allocated_storage = 100
+# db_engine = "postgres"
+# db_engine_version = "15.4"
+# db_name = "devops_challenge"
+# db_username = "dbadmin"
+# db_password = "ChangeThisPassword123!"
+# db_multi_az = false
+# db_backup_retention_period = 7
+# db_skip_final_snapshot = true
+# db_publicly_accessible = false
+
+# ------------------------------------------------------------------------------
+# Cache Configuration (Optional - ElastiCache)
+# ------------------------------------------------------------------------------
+# enable_cache = false
+# cache_node_type = "cache.t3.micro"
+# cache_num_cache_nodes = 1
+# cache_engine = "redis"
+# cache_engine_version = "7.0"
+
+# ------------------------------------------------------------------------------
+# Monitoring & Logging
+# ------------------------------------------------------------------------------
+enable_cloudwatch_logs = true
+log_retention_days = 30
+
+# CloudWatch Alarms
+# enable_alarms = true
+# alarm_email = "alerts@example.com"
+
+# ------------------------------------------------------------------------------
+# Backup Configuration
+# ------------------------------------------------------------------------------
+# enable_backup = true
+# backup_retention_days = 30
+
+# ==============================================================================
+# NOTAS:
+# ==============================================================================
+# 1. Revise TODAS as configurações antes de aplicar
+# 2. Nunca commite este arquivo com valores de produção
+# 3. Use AWS Secrets Manager para senhas e credenciais
+# 4. Configure backend remoto (S3 + DynamoDB) para state management
+# ==============================================================================

@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Challenge - Inventory Manager</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-color: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #ddd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-indicator.connected {
+            background-color: #d4edda;
+            color: var(--success-color);
+        }
+
+        .status-indicator.disconnected {
+            background-color: #f8d7da;
+            color: var(--danger-color);
+        }
+
+        .status-indicator.checking {
+            background-color: #fff3cd;
+            color: var(--warning-color);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-muted);
+            border-radius: 5px 5px 0 0;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background-color: var(--bg-color);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .search-bar select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            min-width: 150px;
+        }
+
+        .items-list {
+            list-style: none;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-info p {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .item-info .item-meta {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 5px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-category {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-price {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-inactive {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: var(--danger-color);
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: var(--success-color);
+        }
+
+        .message.warning {
+            background-color: #fff3cd;
+            color: var(--warning-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .api-info {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+        }
+
+        .api-info code {
+            background-color: #eee;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .item-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Inventory Manager</h1>
+            <p>Sistema de Gerenciamento de Itens - DevOps Challenge</p>
+            <div class="header-info">
+                <div id="status" class="status-indicator checking">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Verificando conexão...</span>
+                </div>
+                <div id="version-info" class="status-indicator" style="background-color: #e3f2fd; color: #1976d2;">
+                    <span>v--</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="items">Items</button>
+            <button class="tab" data-tab="create">Criar Item</button>
+            <button class="tab" data-tab="metrics">Métricas</button>
+            <button class="tab" data-tab="settings">Config</button>
+        </div>
+
+        <!-- Items Tab -->
+        <div id="tab-items" class="card tab-content">
+            <div class="card-header">
+                <h2>Lista de Itens (<span id="items-count">0</span>)</h2>
+                <button class="btn btn-secondary btn-sm" onclick="loadItems()">Atualizar</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Buscar por nome..." onkeyup="filterItems()">
+                <select id="category-filter" onchange="filterItems()">
+                    <option value="">Todas categorias</option>
+                    <option value="default">Default</option>
+                    <option value="electronics">Eletrônicos</option>
+                    <option value="clothing">Roupas</option>
+                    <option value="food">Alimentos</option>
+                </select>
+                <select id="status-filter" onchange="filterItems()">
+                    <option value="all">Todos status</option>
+                    <option value="active">Ativos</option>
+                    <option value="inactive">Inativos</option>
+                </select>
+            </div>
+            <div id="items-container">
+                <div class="loading"><span class="spinner"></span> Carregando itens...</div>
+            </div>
+        </div>
+
+        <!-- Create Item Tab -->
+        <div id="tab-create" class="card tab-content hidden">
+            <h2>Criar Novo Item</h2>
+            <div id="form-message"></div>
+            <form id="create-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Nome *</label>
+                        <input type="text" id="name" name="name" required placeholder="Digite o nome do item" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Categoria</label>
+                        <select id="category" name="category">
+                            <option value="default">Default</option>
+                            <option value="electronics">Eletrônicos</option>
+                            <option value="clothing">Roupas</option>
+                            <option value="food">Alimentos</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descrição</label>
+                    <textarea id="description" name="description" placeholder="Descrição opcional" maxlength="500"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Preço (R$)</label>
+                        <input type="number" id="price" name="price" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Criar Item</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Metrics Tab -->
+        <div id="tab-metrics" class="card tab-content hidden">
+            <h2>Métricas da Aplicação</h2>
+            <div id="metrics-container">
+                <div class="loading"><span class="spinner"></span> Carregando métricas...</div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="card tab-content hidden">
+            <h2>Configurações</h2>
+            <div class="form-group">
+                <label for="api-url-input">URL da API</label>
+                <input type="text" id="api-url-input" placeholder="http://localhost:8000">
+            </div>
+            <div class="form-group">
+                <label for="api-key-input">API Key (opcional)</label>
+                <input type="password" id="api-key-input" placeholder="Sua API Key">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="saveSettings()">Salvar</button>
+                <button class="btn btn-secondary" onclick="resetSettings()">Resetar</button>
+            </div>
+            <div id="settings-message" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="api-info">
+            <div>API URL: <code id="api-url-display"></code></div>
+            <div style="margin-top: 5px;">Ambiente: <code id="environment-display">--</code></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração da API
+        // Nota: Em produção, configure via variável de ambiente
+        const DEFAULT_API_URL = 'http://localhost:8001';
+
+        // Tenta obter URL da variável de ambiente ou localStorage
+        let API_URL = window.API_BASE_URL ||
+                      window.ENV_API_URL ||
+                      localStorage.getItem('api_url') ||
+                      DEFAULT_API_URL;
+
+        let API_KEY = localStorage.getItem('api_key') || '';
+
+        // Cache local de itens
+        let itemsCache = [];
+
+        // Elementos do DOM
+        const statusIndicator = document.getElementById('status');
+        const statusText = statusIndicator.querySelector('.status-text');
+        const versionInfo = document.getElementById('version-info');
+        const itemsContainer = document.getElementById('items-container');
+        const itemsCount = document.getElementById('items-count');
+        const createForm = document.getElementById('create-form');
+        const formMessage = document.getElementById('form-message');
+
+        // Atualiza display da URL
+        document.getElementById('api-url-display').textContent = API_URL;
+        document.getElementById('api-url-input').value = API_URL;
+        document.getElementById('api-key-input').value = API_KEY;
+
+        // Funções auxiliares
+        function setStatus(status, message) {
+            statusIndicator.className = `status-indicator ${status}`;
+            statusText.textContent = message;
+        }
+
+        function showMessage(container, message, type, duration = 3000) {
+            container.innerHTML = `<div class="message ${type}">${escapeHtml(message)}</div>`;
+            if (duration > 0) {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, duration);
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('pt-BR');
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(price || 0);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getHeaders() {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (API_KEY) {
+                headers['X-API-Key'] = API_KEY;
+            }
+            return headers;
+        }
+
+        // Tab Navigation
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+                tab.classList.add('active');
+                const tabId = `tab-${tab.dataset.tab}`;
+                document.getElementById(tabId).classList.remove('hidden');
+
+                // Load content for specific tabs
+                if (tab.dataset.tab === 'metrics') {
+                    loadMetrics();
+                }
+            });
+        });
+
+        // Health Check
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    headers: getHeaders()
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setStatus('connected', `Conectado`);
+                    versionInfo.querySelector('span').textContent = `v${data.version}`;
+                    document.getElementById('environment-display').textContent = data.environment || 'unknown';
+                    return true;
+                }
+            } catch (error) {
+                console.error('Health check failed:', error);
+            }
+            setStatus('disconnected', 'API Desconectada');
+            return false;
+        }
+
+        // Load Items
+        async function loadItems() {
+            itemsContainer.innerHTML = '<div class="loading"><span class="spinner"></span> Carregando itens...</div>';
+
+            try {
+                // Usando endpoint legado para compatibilidade
+                const response = await fetch(`${API_URL}/api/items`, {
+                    headers: getHeaders()
+                });
+
+                if (!response.ok) throw new Error('Falha ao carregar itens');
+
+                const data = await response.json();
+                itemsCache = data.items;
+                itemsCount.textContent = data.total;
+
+                renderItems(itemsCache);
+            } catch (error) {
+                console.error('Error loading items:', error);
+                itemsContainer.innerHTML = `
+                    <div class="message error">
+                        Erro ao carregar itens. Verifique se a API está funcionando.
+                    </div>
+                `;
+            }
+        }
+
+        // Render Items
+        function renderItems(items) {
+            if (items.length === 0) {
+                itemsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>Nenhum item encontrado.</p>
+                        <p>Crie um item usando a aba "Criar Item"!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            itemsContainer.innerHTML = `
+                <ul class="items-list">
+                    ${items.map(item => `
+                        <li class="item" data-id="${item.id}">
+                            <div class="item-info">
+                                <h3>
+                                    ${escapeHtml(item.name)}
+                                    <span class="badge badge-category">${escapeHtml(item.category || 'default')}</span>
+                                    ${item.price > 0 ? `<span class="badge badge-price">${formatPrice(item.price)}</span>` : ''}
+                                    ${item.active === false ? '<span class="badge badge-inactive">Inativo</span>' : ''}
+                                </h3>
+                                <p>${item.description ? escapeHtml(item.description) : '<em>Sem descrição</em>'}</p>
+                                <div class="item-meta">
+                                    <span>ID: ${item.id.substring(0, 8)}...</span>
+                                    <span>Criado: ${formatDate(item.created_at)}</span>
+                                    ${item.updated_at ? `<span>Atualizado: ${formatDate(item.updated_at)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="editItem('${item.id}')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">Remover</button>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        // Filter Items
+        function filterItems() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('category-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+
+            let filtered = itemsCache;
+
+            if (searchTerm) {
+                filtered = filtered.filter(item =>
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    (item.description && item.description.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            if (categoryFilter) {
+                filtered = filtered.filter(item => item.category === categoryFilter);
+            }
+
+            if (statusFilter === 'active') {
+                filtered = filtered.filter(item => item.active !== false);
+            } else if (statusFilter === 'inactive') {
+                filtered = filtered.filter(item => item.active === false);
+            }
+
+            renderItems(filtered);
+        }
+
+        // Create Item
+        async function createItem(name, description, category, price) {
+            try {
+                const response = await fetch(`${API_URL}/api/items`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        name,
+                        description: description || null,
+                        category: category || 'default',
+                        price: parseFloat(price) || 0
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Falha ao criar item');
+                }
+
+                showMessage(formMessage, 'Item criado com sucesso!', 'success');
+                createForm.reset();
+                loadItems();
+
+                // Switch to items tab
+                document.querySelector('[data-tab="items"]').click();
+            } catch (error) {
+                console.error('Error creating item:', error);
+                showMessage(formMessage, `Erro ao criar item: ${error.message}`, 'error');
+            }
+        }
+
+        // Edit Item (placeholder - abre para edição)
+        async function editItem(id) {
+            const item = itemsCache.find(i => i.id === id);
+            if (!item) return;
+
+            const newName = prompt('Nome do item:', item.name);
+            if (newName === null) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/v1/items/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ name: newName }),
+                });
+
+                if (!response.ok) throw new Error('Falha ao atualizar item');
+
+                showMessage(document.getElementById('form-message'), 'Item atualizado!', 'success');
+                loadItems();
+            } catch (error) {
+                console.error('Error updating item:', error);
+                alert('Erro ao atualizar item. Tente novamente.');
+            }
+        }
+
+        // Delete Item
+        async function deleteItem(id) {
+            if (!confirm('Tem certeza que deseja remover este item?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/items/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+
+                if (!response.ok) throw new Error('Falha ao remover item');
+
+                loadItems();
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                alert('Erro ao remover item. Tente novamente.');
+            }
+        }
+
+        // Load Metrics
+        async function loadMetrics() {
+            const container = document.getElementById('metrics-container');
+            container.innerHTML = '<div class="loading"><span class="spinner"></span> Carregando métricas...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/metrics`, {
+                    headers: getHeaders()
+                });
+
+                if (!response.ok) throw new Error('Falha ao carregar métricas');
+
+                const data = await response.json();
+
+                container.innerHTML = `
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">${data.requests_total || 0}</div>
+                            <div class="metric-label">Total Requests</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${data.requests_success || 0}</div>
+                            <div class="metric-label">Sucesso</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${data.requests_failed || 0}</div>
+                            <div class="metric-label">Falhas</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${data.items_count || 0}</div>
+                            <div class="metric-label">Items</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${data.items_created || 0}</div>
+                            <div class="metric-label">Criados</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${data.items_deleted || 0}</div>
+                            <div class="metric-label">Deletados</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${Math.round(data.uptime_seconds / 60) || 0}m</div>
+                            <div class="metric-label">Uptime</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">${data.audit_log_size || 0}</div>
+                            <div class="metric-label">Audit Log</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+                container.innerHTML = `
+                    <div class="message error">
+                        Erro ao carregar métricas. Endpoint pode não estar disponível.
+                    </div>
+                `;
+            }
+        }
+
+        // Settings
+        function saveSettings() {
+            const newUrl = document.getElementById('api-url-input').value.trim();
+            const newKey = document.getElementById('api-key-input').value.trim();
+
+            if (newUrl) {
+                localStorage.setItem('api_url', newUrl);
+                API_URL = newUrl;
+                document.getElementById('api-url-display').textContent = API_URL;
+            }
+
+            if (newKey) {
+                localStorage.setItem('api_key', newKey);
+                API_KEY = newKey;
+            } else {
+                localStorage.removeItem('api_key');
+                API_KEY = '';
+            }
+
+            showMessage(
+                document.getElementById('settings-message'),
+                'Configurações salvas! Reconectando...',
+                'success'
+            );
+
+            // Reconnect
+            setTimeout(() => {
+                checkHealth();
+                loadItems();
+            }, 500);
+        }
+
+        function resetSettings() {
+            localStorage.removeItem('api_url');
+            localStorage.removeItem('api_key');
+            API_URL = DEFAULT_API_URL;
+            API_KEY = '';
+
+            document.getElementById('api-url-input').value = API_URL;
+            document.getElementById('api-key-input').value = '';
+            document.getElementById('api-url-display').textContent = API_URL;
+
+            showMessage(
+                document.getElementById('settings-message'),
+                'Configurações resetadas!',
+                'warning'
+            );
+
+            checkHealth();
+            loadItems();
+        }
+
+        // Event Listeners
+        createForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const category = document.getElementById('category').value;
+            const price = document.getElementById('price').value;
+            createItem(name, description, category, price);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        loadItems();
+                        break;
+                }
+            }
+        });
+
+        // Inicialização
+        async function init() {
+            const isConnected = await checkHealth();
+            if (isConnected) {
+                loadItems();
+            }
+
+            // Auto-refresh health check
+            setInterval(checkHealth, 30000);
+
+            // Auto-refresh items
+            setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    loadItems();
+                }
+            }, 60000);
+        }
+
+        init();
+    </script>
+</body>
+</html>

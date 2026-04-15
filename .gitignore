@@ -1,0 +1,88 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Docker
+docker-compose.override.yml
+.claude
+.codex
+.idea
+.ia 
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Secrets (nunca commitar!)
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# AWS
+.aws/
