@@ -236,3 +236,115 @@ Este desafio é para fins de avaliação técnica apenas.
 # entrevista.devops.desafio
 # entrevista.devops.desafio
 # entrevista.devops.desafio
+
+
+---
+
+# 🧾 Resumo da Implementação
+
+Abaixo está o resumo das implementações realizadas ao longo do desafio, incluindo decisões técnicas e validações feitas incluindo decisões técnicas e validações realizadas durante o processo
+
+## ✔️ Parte 1: Containerização
+
+- Dockerfile criado para API e Frontend  
+- Docker Compose configurado para ambiente local  
+- Ajustes realizados para comunicação entre containers (remoção de localhost)  
+- Aplicação validada com API + Frontend integrados  
+
+---
+
+## ✔️ Parte 2: Infrastructure as Code
+
+- Módulo de **ECR** criado para armazenamento das imagens  
+- Módulo de **VPC** com subnets públicas/privadas, IGW e NAT Gateway  
+- Módulo de **ECS Fargate** para execução dos containers  
+- Módulo de **ALB** para exposição da aplicação  
+- Integração completa entre ALB → ECS → containers  
+- Estrutura modular com uso de variáveis, outputs e tags  
+
+---
+
+## ✔️ Parte 3: Automação
+
+Scripts desenvolvidos em Python:
+
+- `health_check.py` → valida disponibilidade da API  
+- `backup.py` → backup dos arquivos do projeto  
+- `deploy.py` → automatiza build e execução dos containers  
+- `expurgo.py` → limpeza de recursos Docker não utilizados  
+
+---
+
+## ✔️ Parte 4: CI/CD
+
+Pipeline implementado com GitHub Actions:
+
+- Build da API e Frontend  
+- Scan de vulnerabilidades com Trivy  
+- Validação do Terraform (`fmt`, `validate`, `plan`)  
+- Pipeline validado com build, análise de segurança e validação de infraestrutura, preparado para evolução com etapas de deploy
+
+---
+
+# ⚖️ Decisões Técnicas
+
+- ECS Fargate em vez de EC2  
+  escolhido para não precisar gerenciar instância e simplificar a operação  
+
+- ECS em vez de EKS  
+  suficiente para o cenário do desafio e bem menos complexo de manter  
+
+- ALB  
+  usado para expor a aplicação e distribuir o tráfego entre os serviços  
+
+- Docker  
+  garante ambiente padronizado e facilita rodar local e em cloud  
+
+---
+
+# 💰 Estimativa de Custos
+
+Estimativa aproximada baseada no AWS Pricing Calculator:
+**Cenário considerado: ~30 mil requisições/mês**
+- ECS Fargate: ~US$ 18/mês  
+- ALB: ~US$ 16–20/mês  
+- ECR: ~US$ 1–5/mês  
+- NAT Gateway: ~US$ 30–35/mês  
+
+Total estimado: ~US$ 65–75/mês  
+
+Obs: a titulo de comparação um lançamento semelhante utilizando EKS teria custo em torno de US$ 70/mês
+
+
+O NAT Gateway representa a maior parte do custo e pode ser otimizado em ambientes não produtivos.
+
+---
+
+# 🔄 Plano de Disaster Recovery (DR)
+RPO ≈ 0 ou próximo de 0  
+não há banco persistente, aplicação stateless, sem perda relevante de dados  
+
+RTO ≈ até 15 minutos  
+infra já definida em terraform, permitindo recriação rápida do ambiente, inclusive em outra região se necessário  
+
+infraestrutura totalmente reproduzível via terraform  
+
+deploy distribuído em múltiplas AZs  
+
+uso de ALB para balanceamento de carga  
+
+backup de configurações via script  
+
+possibilidade de recriação rápida do ambiente em caso de falha  
+
+---
+
+# 📌 Considerações Finais
+
+A solução prioriza simplicidade, modularização e menor sobrecarga operacional, aproveitando ao máximo serviços gerenciados da AWS e seguindo boas práticas de DevOps e cloud
+
+A arquitetura está preparada para evolução futura com:
+
+- Deploy automatizado completo  
+- Monitoramento e observabilidade  
+- Expansão para múltiplos ambientes (staging/prod)  
