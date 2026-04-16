@@ -338,7 +338,16 @@ backup de configurações via script
 possibilidade de recriação rápida do ambiente em caso de falha  
 
 ---
+## 📊 Observabilidade
 
+A solução prevê integração com serviços de observabilidade utilizando recursos nativos da AWS:
+
+- Logs centralizados via CloudWatch Logs para containers executados no ECS  
+- Métricas de infraestrutura  via CloudWatch Metrics  
+- Health check exposto pela aplicação e integrado ao ALB para monitoramento automático  
+- Possibilidade de criação de alarmes para falhas e degradação de performance  
+
+Como evolução, é possível integrar com Prometheus e Grafana para maior visibilidade e análise de métricas.  
 # 📌 Considerações Finais
 
 A solução prioriza simplicidade, modularização e menor sobrecarga operacional, aproveitando ao máximo serviços gerenciados da AWS e seguindo boas práticas de DevOps e cloud
