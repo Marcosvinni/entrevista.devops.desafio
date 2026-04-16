@@ -1,231 +1,174 @@
 # Registro de Decisões Técnicas (ADR)
 
-> **NOTA**: Este é um template. O candidato deve documentar suas decisões técnicas seguindo este formato.
-
-Este documento registra as decisões arquiteturais importantes tomadas durante o desenvolvimento deste projeto, seguindo o padrão [Architecture Decision Records (ADR)](https://adr.github.io/).
+Este documento registra as principais decisões arquiteturais tomadas durante o desenvolvimento da solução.
 
 ---
 
 ## ADR-001: Escolha da Plataforma de Compute
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Aceita
 
 ### Contexto
-_Precisamos escolher onde executar os containers da API e Frontend. As opções disponíveis são:_
-- _Amazon EKS (Kubernetes gerenciado)_
-- _Amazon ECS (Fargate ou EC2)_
-- _Amazon EC2 com Docker_
+Era necessário definir a melhor forma de executar os containers da aplicação (API e frontend) em ambiente AWS, considerando simplicidade, custo e esforço operacional.
+
+As opções avaliadas foram:
+- Amazon EKS
+- Amazon ECS (Fargate ou EC2)
+- Amazon EC2 com Docker
 
 ### Decisão
-_Escolhemos **[OPÇÃO]** porque..._
+Foi escolhido o **Amazon ECS Fargate**, por ser uma solução serverless que elimina a necessidade de gerenciamento de instâncias, reduzindo a complexidade operacional.
 
 ### Consequências
 
 **Positivas:**
-- _Benefício 1_
-- _Benefício 2_
+- Não há necessidade de gerenciar servidores
+- Integração simples com outros serviços AWS
+- Deploy mais rápido e direto
 
 **Negativas:**
-- _Trade-off 1_
-- _Trade-off 2_
-
-### Alternativas Consideradas
-
-| Opção | Prós | Contras |
-|-------|------|---------|
-| EKS | _Kubernetes nativo, escalabilidade_ | _Complexidade, custo_ |
-| ECS Fargate | _Serverless, simplicidade_ | _Vendor lock-in_ |
-| EC2 + Docker | _Controle total, custo_ | _Gerenciamento manual_ |
+- Menor flexibilidade comparado ao Kubernetes
+- Dependência maior da AWS (vendor lock-in)
 
 ---
 
 ## ADR-002: Estratégia de CI/CD
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Aceita
 
 ### Contexto
-_Precisamos definir a ferramenta e estratégia de CI/CD para o projeto._
+Era necessário definir uma forma de automatizar build, validação e segurança da aplicação.
 
 ### Decisão
-_Escolhemos **GitHub Actions** porque..._
+Foi escolhido o uso de **GitHub Actions**, pela integração nativa com o repositório e facilidade de configuração.
 
 ### Consequências
 
 **Positivas:**
-- _Integração nativa com GitHub_
-- _Runners gratuitos_
-- _Marketplace de actions_
+- Integração direta com o código
+- Fácil configuração e manutenção
+- Permite validação de infraestrutura e segurança no pipeline
 
 **Negativas:**
-- _Limitações de tempo em runners gratuitos_
+- Limitações em runners gratuitos
+- Pipeline ainda sem etapa completa de deploy
 
 ---
 
 ## ADR-003: Estratégia de Deploy
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Aceita
 
 ### Contexto
-_Precisamos definir como os deploys serão realizados para minimizar downtime e riscos._
+Era necessário definir uma estratégia de deploy simples e segura, considerando o escopo do desafio.
 
 ### Decisão
-_Implementamos **[Blue-Green / Canary / Rolling Update]** porque..._
+Foi adotado um modelo de **recriação do ambiente (rolling simplificado)**, utilizando containers atualizados.
 
 ### Consequências
 
 **Positivas:**
-- _Rollback rápido_
-- _Zero downtime_
+- Simplicidade na implementação
+- Baixo risco de inconsistência
 
 **Negativas:**
-- _Custo adicional (para blue-green)_
+- Pode haver pequeno downtime
+- Não implementa estratégias avançadas como blue-green
 
 ---
 
 ## ADR-004: Gerenciamento de Estado do Terraform
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Parcial
 
 ### Contexto
-_O estado do Terraform precisa ser armazenado de forma segura e acessível pela equipe._
+O Terraform precisa manter estado consistente da infraestrutura.
 
 ### Decisão
-_Utilizamos **S3 + DynamoDB** para remote state porque..._
+Para o escopo do desafio, o state foi mantido localmente, com estrutura preparada para evolução futura para **remote state em S3 com DynamoDB**.
 
 ### Consequências
 
 **Positivas:**
-- _State compartilhado entre a equipe_
-- _Locking para evitar conflitos_
-- _Versionamento do state_
+- Simplicidade para desenvolvimento inicial
+- Fácil execução local
 
 **Negativas:**
-- _Necessidade de bootstrap inicial_
+- Não adequado para times ou produção
+- Risco de inconsistência em múltiplos usuários
 
 ---
 
 ## ADR-005: Imagem Base dos Containers
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Aceita
 
 ### Contexto
-_Precisamos escolher imagens base para os Dockerfiles que balanceiem segurança, tamanho e compatibilidade._
+Era necessário escolher imagens base seguras e leves para os containers.
 
 ### Decisão
 
 | Aplicação | Imagem Base | Justificativa |
 |-----------|-------------|---------------|
-| API | _python:3.11-slim / alpine_ | _..._ |
-| Frontend | _nginx:alpine_ | _..._ |
+| API | python:3.11-slim | imagem leve e compatível |
+| Frontend | nginx:alpine | ideal para servir conteúdo estático |
 
 ### Consequências
 
 **Positivas:**
-- _Imagens pequenas_
-- _Menos vulnerabilidades_
+- Imagens menores
+- Menor superfície de ataque
 
 **Negativas:**
-- _Alpine pode ter incompatibilidades_
+- Possíveis limitações de bibliotecas em imagens mais enxutas
 
 ---
 
 ## ADR-006: Estrutura de Módulos Terraform
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Aceita
 
 ### Contexto
-_Precisamos organizar o código Terraform de forma modular e reutilizável._
+Era necessário organizar o código Terraform de forma reutilizável e escalável.
 
 ### Decisão
-_Estrutura de módulos:_
-
-```
-terraform/
-├── modules/           # Módulos reutilizáveis
-│   ├── networking/
-│   ├── compute/
-│   └── ...
-└── environments/      # Configurações por ambiente
-    ├── staging/
-    └── production/
-```
+Foi adotada estrutura modular separando componentes como VPC, ECS, ECR e ALB.
 
 ### Consequências
 
 **Positivas:**
-- _DRY (Don't Repeat Yourself)_
-- _Facilita manutenção_
-- _Ambientes consistentes_
+- Reutilização de código
+- Facilidade de manutenção
+- Melhor organização
 
 **Negativas:**
-- _Overhead inicial de estruturação_
+- Maior esforço inicial de estruturação
 
 ---
 
 ## ADR-007: Segurança no Pipeline
 
 ### Status
-_Proposta | Aceita | Deprecada | Substituída_
+Aceita
 
 ### Contexto
-_Precisamos implementar verificações de segurança automatizadas no pipeline._
+Era necessário garantir validações de segurança no processo de build.
 
 ### Decisão
-_Implementamos as seguintes ferramentas:_
-
-| Tipo | Ferramenta | Fase |
-|------|------------|------|
-| Container Scan | _Trivy / Snyk_ | _Build_ |
-| SAST | _Semgrep / CodeQL_ | _PR_ |
-| IaC Security | _tfsec / Checkov_ | _PR_ |
-| Dependency Scan | _Dependabot_ | _Contínuo_ |
+Foi implementado scan de vulnerabilidades com **Trivy** no pipeline de CI.
 
 ### Consequências
 
 **Positivas:**
-- _Detecção precoce de vulnerabilidades_
-- _Compliance automatizado_
+- Identificação de vulnerabilidades nas imagens
+- Maior segurança no processo de build
 
 **Negativas:**
-- _Possíveis falsos positivos_
-- _Aumento no tempo de build_
-
----
-
-## Template para Novas Decisões
-
-```markdown
-## ADR-XXX: [Título]
-
-### Status
-Proposta | Aceita | Deprecada | Substituída
-
-### Contexto
-[Descreva o contexto e o problema]
-
-### Decisão
-[Descreva a decisão tomada]
-
-### Consequências
-**Positivas:**
-- ...
-
-**Negativas:**
-- ...
-
-### Alternativas Consideradas
-[Liste outras opções avaliadas]
-```
-
----
-
-## Referências
-
-- [ADR GitHub Organization](https://adr.github.io/)
-- [Documenting Architecture Decisions - Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
+- Pode gerar falsos positivos
+- Aumenta o tempo do pipeline
