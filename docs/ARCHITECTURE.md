@@ -1,51 +1,23 @@
 # Arquitetura da Solução
 
-> **NOTA**: Este é um template. O candidato deve preencher com a arquitetura implementada.
-
 ## Visão Geral
 
-_Descreva aqui a visão geral da arquitetura implementada._
+A solução foi desenhada para executar uma aplicação simples (API + frontend) em ambiente AWS, utilizando containers e serviços gerenciados.
+
+A aplicação foi containerizada com Docker e validada localmente com docker-compose. Para execução em cloud, foi escolhida a arquitetura baseada em ECS Fargate, com imagens armazenadas no ECR e exposição via Application Load Balancer (ALB).
+
+A infraestrutura foi definida utilizando Terraform, com separação em módulos (VPC, ECS, ALB e ECR), permitindo reutilização e facilidade de manutenção.
+
+---
 
 ## Diagrama de Arquitetura
 
-_Inclua um diagrama da arquitetura. Pode usar:_
-- [Draw.io](https://draw.io)
-- [Excalidraw](https://excalidraw.com)
-- [Mermaid](https://mermaid.js.org/)
-- ASCII Art
+O diagrama da arquitetura está disponível em:
 
-### Exemplo com Mermaid:
+- `docs/architecture.drawio`
+- `docs/architecture.png`
 
-```mermaid
-graph TB
-    subgraph "Internet"
-        User[Usuário]
-    end
-    
-    subgraph "AWS Cloud"
-        subgraph "VPC"
-            ALB[Application Load Balancer]
-            
-            subgraph "Public Subnets"
-                NAT[NAT Gateway]
-            end
-            
-            subgraph "Private Subnets"
-                subgraph "Compute"
-                    API[API Container]
-                    Frontend[Frontend Container]
-                end
-            end
-        end
-        
-        ECR[ECR Registry]
-    end
-    
-    User --> ALB
-    ALB --> Frontend
-    ALB --> API
-    API --> NAT
-```
+---
 
 ## Componentes
 
@@ -53,111 +25,118 @@ graph TB
 
 | Componente | Descrição | CIDR |
 |------------|-----------|------|
-| VPC | _Descrição_ | _10.0.0.0/16_ |
-| Public Subnet 1 | _Descrição_ | _10.0.1.0/24_ |
-| Public Subnet 2 | _Descrição_ | _10.0.2.0/24_ |
-| Private Subnet 1 | _Descrição_ | _10.0.10.0/24_ |
-| Private Subnet 2 | _Descrição_ | _10.0.11.0/24_ |
+| VPC | Rede principal da aplicação | 10.0.0.0/16 |
+| Public Subnet 1 | Subnet pública para ALB | 10.0.1.0/24 |
+| Public Subnet 2 | Subnet pública para alta disponibilidade | 10.0.2.0/24 |
+| Private Subnet 1 | Subnet privada para execução dos containers | 10.0.11.0/24 |
+| Private Subnet 2 | Subnet privada para execução dos containers | 10.0.12.0/24 |
+
+---
 
 ### Compute
 
-_Descreva a solução de compute escolhida (EKS, ECS, EC2)._
-
 | Aspecto | Decisão | Justificativa |
 |---------|---------|---------------|
-| Plataforma | _EKS/ECS/EC2_ | _Por que escolheu?_ |
-| Tipo de instância | _t3.medium_ | _Por que?_ |
-| Auto Scaling | _Sim/Não_ | _Configuração_ |
+| Plataforma | ECS Fargate | evita gerenciamento de instâncias e reduz complexidade |
+| Tipo de execução | Serverless containers | ideal para workloads simples e escaláveis |
+| Auto Scaling | Não implementado | pode ser adicionado futuramente baseado em CPU/memória |
+
+---
 
 ### Segurança
 
-_Descreva as medidas de segurança implementadas._
+- **Security Groups**: ALB exposto na internet, ECS restrito às subnets privadas  
+- **IAM Roles**: role de execução para tasks ECS com permissões mínimas necessárias  
+- **Secrets Management**: uso de variáveis de ambiente (sem hardcode de credenciais)  
+- **Network ACLs**: configuração padrão da VPC mantida  
 
-- **Security Groups**: _Descrição_
-- **IAM Roles**: _Descrição_
-- **Secrets Management**: _Descrição_
-- **Network ACLs**: _Descrição_
+---
 
 ## Fluxo de Deploy
 
-```
-1. Developer faz push → GitHub
-2. GitHub Actions dispara pipeline
-3. Build e testes executados
-4. Imagem Docker criada
-5. Scan de vulnerabilidades
-6. Push para ECR
-7. Deploy para staging (automático)
-8. Testes de integração
-9. Aprovação manual
-10. Deploy para produção
-```
+---
 
 ## Estimativa de Custos
 
-_Use o [AWS Pricing Calculator](https://calculator.aws/) para estimar custos._
+Cenário considerado: ~30 mil requisições/mês
 
 | Serviço | Especificação | Custo Mensal Estimado |
 |---------|---------------|----------------------|
-| EC2/EKS/ECS | _Spec_ | _$XX.XX_ |
-| ALB | _Spec_ | _$XX.XX_ |
-| NAT Gateway | _Spec_ | _$XX.XX_ |
-| ECR | _Spec_ | _$XX.XX_ |
-| **Total** | | **$XX.XX** |
+| ECS Fargate | 2 containers (API + frontend) | ~US$ 18 |
+| ALB | 1 load balancer | ~US$ 16–20 |
+| NAT Gateway | 1 gateway | ~US$ 30–35 |
+| ECR | armazenamento de imagens | ~US$ 1–5 |
+| **Total** | | **~US$ 65–75** |
+
+Obs: o NAT Gateway representa a maior parte do custo e pode ser otimizado em ambientes de desenvolvimento.
+
+---
 
 ## Escalabilidade
 
-_Descreva como a arquitetura escala._
-
 ### Horizontal
 
-- _Como novos containers/instâncias são adicionados?_
-- _Quais métricas disparam o scaling?_
+A aplicação pode escalar aumentando o número de tasks no ECS.
+
+O scaling pode ser configurado com base em:
+- CPU
+- memória
+- número de requisições
 
 ### Vertical
 
-- _A aplicação suporta upgrade de recursos?_
+A aplicação suporta ajuste de CPU e memória das tasks no ECS.
+
+---
 
 ## Alta Disponibilidade
 
-_Descreva como a alta disponibilidade é garantida._
+- Multi-AZ: Sim  
+- Réplicas: arquitetura preparada para múltiplas tasks  
+- Health Checks: endpoint `/health` da API preparado para uso com ALB  
 
-- Multi-AZ: _Sim/Não_
-- Réplicas: _Quantidade_
-- Health Checks: _Configuração_
+---
 
 ## Disaster Recovery
 
 | Métrica | Objetivo | Implementação |
 |---------|----------|---------------|
-| RPO (Recovery Point Objective) | _X horas_ | _Como?_ |
-| RTO (Recovery Time Objective) | _X minutos_ | _Como?_ |
+| RPO (Recovery Point Objective) | próximo de 0 | aplicação stateless, sem banco persistente |
+| RTO (Recovery Time Objective) | até 15 minutos | recriação rápida via Terraform |
+
+A estratégia de DR considera recriação da infraestrutura em outra região AWS utilizando o código Terraform.
+
+---
 
 ## Observabilidade
 
-_Descreva a stack de observabilidade._
-
 ### Logs
-- _Onde os logs são centralizados?_
-- _Como são acessados?_
+- Centralizados via CloudWatch Logs  
+- Acesso por grupos de logs dos serviços ECS  
 
 ### Métricas
-- _Quais métricas são coletadas?_
-- _Onde são visualizadas?_
+- CPU e memória das tasks  
+- status dos containers  
+- health checks da aplicação  
 
 ### Alertas
-- _Quais alertas estão configurados?_
-- _Como são notificados?_
+- Não implementados nesta etapa  
+- Como melhoria futura: CloudWatch Alarms para falhas e indisponibilidade  
+
+---
 
 ## Limitações Conhecidas
 
-_Liste limitações da arquitetura atual e possíveis melhorias futuras._
+1. Auto Scaling não implementado → pode ser adicionado com métricas do CloudWatch  
+2. Pipeline ainda sem deploy automatizado completo → evolução futura  
+3. Observabilidade básica → pode evoluir com Grafana/Prometheus ou Datadog  
+4. Sem banco persistente → possível evolução com RDS ou DynamoDB  
 
-1. _Limitação 1_ → _Melhoria sugerida_
-2. _Limitação 2_ → _Melhoria sugerida_
+---
 
 ## Referências
 
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
-- [Terraform AWS Modules](https://registry.terraform.io/namespaces/terraform-aws-modules)
-- _Outras referências utilizadas_
+- AWS Well-Architected Framework  
+- Terraform Registry  
+- AWS Pricing Calculator  
+- Draw.io  
